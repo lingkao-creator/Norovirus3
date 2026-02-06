@@ -1,1 +1,255 @@
+該吃什麼？動態餐盤
+
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>早安健康｜康復期諾羅動態餐盤</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+   <style>
+       :root {
+           --primary-green: #78bf22;
+           --accent-pink: #FAA0BE;
+           --deep-orange: #d2672d;
+       }
+       body {
+           font-family: 'Noto Sans TC', sans-serif;
+           background-color: transparent;
+       }
+       .bg-primary { background-color: var(--primary-green); }
+       .text-primary { color: var(--primary-green); }
+       .bg-pink { background-color: var(--accent-pink); }
+       .bg-orange { background-color: var(--deep-orange); }
+      
+       /* 階段切換按鈕動畫 */
+       .stage-btn {
+           transition: all 0.3s ease;
+       }
+       .stage-btn.active {
+           background-color: var(--primary-green);
+           color: white;
+           transform: scale(1.05);
+           box-shadow: 0 4px 12px rgba(120, 191, 34, 0.3);
+       }
+
+
+       /* 餐盤動畫 */
+       .plate-container {
+           transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+       }
+      
+       .food-item {
+           animation: fadeIn 0.5s ease-out forwards;
+       }
+       @keyframes fadeIn {
+           from { opacity: 0; transform: translateY(10px); }
+           to { opacity: 1; transform: translateY(0); }
+       }
+
+
+       /* 滾動條美化 */
+       ::-webkit-scrollbar { width: 0px; }
+   </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-2">
+
+
+   <div class="w-full max-w-md bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-gray-100">
+      
+       <!-- Header -->
+       <div class="pt-6 px-6 flex justify-between items-center">
+           <a href="https://edh.tw/" target="_blank" rel="noopener">
+               <img src="https://media-edh-cdn.h2u.io/image/article/default/w7cymNTKDuTpRSVpyfmx45eU8lr1lbxuGYWpBCO3.png"
+                    alt="早安健康 Logo" class="h-8 object-contain">
+           </a>
+           <div class="text-[var(--deep-orange)] font-bold text-sm bg-orange/10 px-3 py-1 rounded-full">
+               腸胃修復指南
+           </div>
+       </div>
+
+
+       <!-- Title -->
+       <div class="px-6 pt-4 pb-2">
+           <div class="text-2xl font-black text-gray-800 leading-tight">康復期</div>
+           <div class="text-3xl font-black text-primary leading-tight">該吃什麼？動態餐盤</div>
+       </div>
+
+
+       <div class="px-6 mt-2">
+           <p class="text-gray-500 text-xs leading-relaxed">
+               諾羅病毒後的腸胃極度脆弱。請選擇您目前的「病程階段」，我們將為您調整最佳的飲食組合。
+           </p>
+       </div>
+
+
+       <!-- Stage Stepper -->
+       <div class="px-4 mt-6">
+           <div class="flex items-center justify-between bg-gray-50 p-1.5 rounded-2xl relative">
+               <button onclick="setStage(0)" id="stage-0" class="stage-btn active flex-1 py-3 px-1 rounded-xl text-[10px] md:text-xs font-bold z-10">
+                   第一階段<br>劇烈嘔吐期
+               </button>
+               <button onclick="setStage(1)" id="stage-1" class="stage-btn flex-1 py-3 px-1 rounded-xl text-[10px] md:text-xs font-bold text-gray-400 z-10">
+                   第二階段<br>腹瀉穩定期
+               </button>
+               <button onclick="setStage(2)" id="stage-2" class="stage-btn flex-1 py-3 px-1 rounded-xl text-[10px] md:text-xs font-bold text-gray-400 z-10">
+                   第三階段<br>機能修復期
+               </button>
+           </div>
+       </div>
+
+
+       <!-- Dynamic Plate -->
+       <div class="px-6 mt-8 flex justify-center">
+           <div id="plateGraphic" class="plate-container w-48 h-48 md:w-56 md:h-56 bg-gray-50 rounded-full border-[8px] border-gray-100 shadow-inner flex flex-col items-center justify-center p-4 text-center">
+               <!-- 內容由 JS 動態生成 -->
+               <div id="plateIcon" class="text-4xl mb-2">💧</div>
+               <div id="plateMainFood" class="text-lg font-black text-gray-800">電解質水</div>
+               <div id="plateDesc" class="text-[10px] text-gray-400 font-bold">先禁食 1-2 小時<br>再少量多次補水</div>
+           </div>
+       </div>
+
+
+       <!-- Food Lists -->
+       <div class="px-6 mt-8 space-y-4 pb-4">
+           <!-- 推薦清單 -->
+           <div class="bg-primary/5 rounded-2xl p-4 border border-primary/20">
+               <div class="flex items-center gap-2 mb-3">
+                   <div class="w-2 h-2 rounded-full bg-primary"></div>
+                   <span class="text-xs font-black text-primary uppercase tracking-wider">建議攝取</span>
+               </div>
+               <div id="yesList" class="flex flex-wrap gap-2">
+                   <!-- JS 動態生成 -->
+               </div>
+           </div>
+
+
+           <!-- 避開清單 -->
+           <div class="bg-orange/5 rounded-2xl p-4 border border-orange/20">
+               <div class="flex items-center gap-2 mb-3">
+                   <div class="w-2 h-2 rounded-full bg-orange"></div>
+                   <span class="text-xs font-black text-orange uppercase tracking-wider">暫時避開</span>
+               </div>
+               <div id="noList" class="flex flex-wrap gap-2 text-gray-500">
+                   <!-- JS 動態生成 -->
+               </div>
+           </div>
+       </div>
+
+
+       <!-- Tips Section -->
+       <div class="px-6 pb-6">
+           <div class="bg-gray-50 p-4 rounded-2xl flex items-start gap-3">
+               <div class="bg-white p-2 rounded-lg shadow-sm">
+                   <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+               </div>
+               <div class="flex-1">
+                   <div class="text-[10px] font-bold text-gray-400 mb-1">專家叮嚀</div>
+                   <p id="expertTip" class="text-xs text-gray-600 leading-relaxed font-medium">
+                       嘔吐劇烈時，腸胃正在抗議。強迫進食只會吐得更嚴重，補水才是首要任務。
+                   </p>
+               </div>
+           </div>
+       </div>
+
+
+       <!-- Footer -->
+       <div class="bg-gray-50 px-8 py-4 text-center border-t border-gray-100">
+           <div class="text-[10px] text-gray-400 font-medium">
+               © 早安健康內容部開發 | <a href="https://edh.tw/" target="_blank" class="hover:text-primary underline">edh.tw</a>
+           </div>
+       </div>
+   </div>
+
+
+   <script>
+       const stages = [
+           {
+               icon: "💧",
+               main: "電解質水 / 米湯",
+               desc: "禁食 1-2 小時後<br>嘗試小口啜飲",
+               yes: ["口服電解質水", "稀薄米湯", "常溫清水"],
+               no: ["所有固體食物", "牛奶", "果汁", "運動飲料"],
+               tip: "嘔吐劇烈時，腸胃正處於發炎敏感期。強迫進食只會加重負擔，此階段「水分」與「電解質」重於營養。"
+           },
+           {
+               icon: "🥣",
+               main: "白粥 / 吐司 / 饅頭",
+               desc: "由澱粉類開始<br>少量多餐試吃",
+               yes: ["白粥", "白吐司", "蘇打餅乾", "去皮蘋果", "香蕉"],
+               no: ["高纖蔬菜", "油炸物", "甜點", "乳製品"],
+               tip: "嘔吐停止後可開始攝取單純澱粉。若吃了沒再吐，代表腸胃開始恢復蠕動，可緩慢增加份量。"
+           },
+           {
+               icon: "🐟",
+               main: "蒸魚 / 雞胸肉 / 蒸蛋",
+               desc: "補充優質蛋白質<br>修復腸道細胞",
+               yes: ["清蒸魚肉", "蒸雞胸肉", "水煮蛋", "蒸蛋", "軟質蔬菜"],
+               no: ["辛辣食物", "酒精", "加工食品", "堅果類"],
+               tip: "進入機能修復期，蛋白質是修復腸道絨毛的關鍵。但需避開油煎、油炒，以清蒸與水煮為主。"
+           }
+       ];
+
+
+       function setStage(index) {
+           const data = stages[index];
+
+
+           // 按鈕狀態
+           document.querySelectorAll('.stage-btn').forEach((btn, i) => {
+               if(i === index) {
+                   btn.classList.add('active');
+                   btn.classList.remove('text-gray-400');
+               } else {
+                   btn.classList.remove('active');
+                   btn.classList.add('text-gray-400');
+               }
+           });
+
+
+           // 餐盤更新
+           const plate = document.getElementById('plateGraphic');
+           document.getElementById('plateIcon').innerText = data.icon;
+           document.getElementById('plateMainFood').innerText = data.main;
+           document.getElementById('plateDesc').innerHTML = data.desc;
+
+
+           // 清單更新
+           const renderList = (id, list, colorClass) => {
+               const el = document.getElementById(id);
+               el.innerHTML = '';
+               list.forEach((item, i) => {
+                   const span = document.createElement('span');
+                   span.className = `food-item text-[11px] font-bold px-3 py-1.5 rounded-full ${colorClass} bg-white border border-current shadow-sm`;
+                   span.style.animationDelay = `${i * 0.1}s`;
+                   span.innerText = item;
+                   el.appendChild(span);
+               });
+           };
+
+
+           renderList('yesList', data.yes, 'text-primary');
+           renderList('noList', data.no, 'text-gray-400');
+
+
+           // 專家叮嚀更新
+           document.getElementById('expertTip').innerText = data.tip;
+
+
+           // 簡單縮放動畫
+           plate.style.transform = 'scale(0.95)';
+           setTimeout(() => {
+               plate.style.transform = 'scale(1)';
+           }, 100);
+       }
+
+
+       // 初始化
+       setStage(0);
+   </script>
+</body>
+</html>
+
 
